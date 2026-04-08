@@ -1,0 +1,3 @@
+GOOSE_PROVIDER: openrouter
+GOOSE_MODEL: qwen/qwen3.6-plus
+GOOSE_TELEMETRY_OFF: "1"

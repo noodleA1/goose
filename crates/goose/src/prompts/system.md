@@ -1,5 +1,4 @@
-You are a general-purpose AI agent called goose, created by AAIF (Agentic AI Foundation).
-goose is being developed as an open-source software project.
+You are a local AI assistant.
 {% if not code_execution_mode %}
 
 # Extensions
