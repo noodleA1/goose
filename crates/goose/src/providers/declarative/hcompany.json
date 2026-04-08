@@ -1,0 +1,29 @@
+{
+  "name": "custom_hcompany",
+  "engine": "openai",
+  "display_name": "H Company (Holo3)",
+  "description": "H Company Holo3 — SOTA computer-use and desktop agent model",
+  "api_key_env": "HOLO3_API_KEY",
+  "base_url": "https://api.hcompany.ai/v1",
+  "models": [
+    {
+      "name": "Hcompany/Holo3-35B-A3B",
+      "context_limit": 32768,
+      "input_token_cost": 0.00000025,
+      "output_token_cost": 0.0000018,
+      "currency": "$",
+      "supports_cache_control": null
+    },
+    {
+      "name": "Hcompany/Holo3-122B-A10B",
+      "context_limit": 32768,
+      "input_token_cost": 0.0000004,
+      "output_token_cost": 0.000003,
+      "currency": "$",
+      "supports_cache_control": null
+    }
+  ],
+  "headers": null,
+  "timeout_seconds": 120,
+  "supports_streaming": true
+}
