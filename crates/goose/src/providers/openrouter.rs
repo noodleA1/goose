@@ -16,23 +16,14 @@ use crate::providers::formats::openrouter as openrouter_format;
 use rmcp::model::Tool;
 
 const OPENROUTER_PROVIDER_NAME: &str = "openrouter";
-pub const OPENROUTER_DEFAULT_MODEL: &str = "anthropic/claude-sonnet-4";
-pub const OPENROUTER_DEFAULT_FAST_MODEL: &str = "google/gemini-2.5-flash";
+pub const OPENROUTER_DEFAULT_MODEL: &str = "qwen/qwen3.6-plus";
+pub const OPENROUTER_DEFAULT_FAST_MODEL: &str = "qwen/qwen3.6-plus";
 pub const OPENROUTER_MODEL_PREFIX_ANTHROPIC: &str = "anthropic";
 
-// OpenRouter can run many models, we suggest the default
+// DONNA distribution: locked to Qwen3.6-plus only.
+// No other models are offered — metering and quality are controlled at this layer.
 pub const OPENROUTER_KNOWN_MODELS: &[&str] = &[
-    "x-ai/grok-code-fast-1",
-    "anthropic/claude-sonnet-4.5",
-    "anthropic/claude-sonnet-4",
-    "anthropic/claude-opus-4.1",
-    "anthropic/claude-opus-4",
-    "google/gemini-2.5-pro",
-    "google/gemini-2.5-flash",
-    "deepseek/deepseek-r1-0528",
     "qwen/qwen3.6-plus",
-    "qwen/qwen3-coder",
-    "moonshotai/kimi-k2",
 ];
 pub const OPENROUTER_DOC_URL: &str = "https://openrouter.ai/models";
 
