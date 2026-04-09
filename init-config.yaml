@@ -1,3 +1,22 @@
+# DONNA distribution — approved model configuration
+#
+# Primary (lead): Qwen3.6-plus via OpenRouter
+#   - handles orchestration, reasoning, tool use
+#   - OPENROUTER_API_KEY injected by Tauri from Stronghold at sidecar spawn
+#
+# Worker: Holo3 via H Company (custom_hcompany declarative provider)
+#   - handles visual/computer-use tasks
+#   - HAI_API_KEY injected by Tauri from Stronghold at sidecar spawn
+
 GOOSE_PROVIDER: openrouter
 GOOSE_MODEL: qwen/qwen3.6-plus
 GOOSE_TELEMETRY_OFF: "1"
+
+# Holo3 worker — available for computer-use/visual tasks
+# Qwen delegates to this via the summon extension for screen/GUI tasks.
+GOOSE_WORKER_PROVIDER: custom_hcompany
+GOOSE_WORKER_MODEL: holo3-35b-a3b
+
+# Computer-use MCP extension (donna-computer-use) is registered dynamically
+# by Tauri after goose-server starts — see src/commands/sidecar.rs
+# register_computer_use_extension(). No static config needed here.

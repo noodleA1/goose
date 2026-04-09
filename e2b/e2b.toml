@@ -1,0 +1,13 @@
+# E2B sandbox template configuration
+# Run `e2b template build` from this directory to build and push.
+# https://e2b.dev/docs/sandbox-template
+
+[template]
+name        = "donna-goose"
+dockerfile  = "Dockerfile"
+start_cmd   = "/opt/goose/start.sh"
+
+# Expose the goose-server port
+[[ports]]
+port     = 3000
+protocol = "https"
