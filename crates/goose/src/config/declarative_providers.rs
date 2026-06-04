@@ -502,41 +502,37 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_tanzu_json_deserializes() {
-        let json = include_str!("../providers/declarative/tanzu.json");
+    fn test_hcompany_json_deserializes() {
+        let json = include_str!("../providers/declarative/hcompany.json");
         let config: DeclarativeProviderConfig =
-            serde_json::from_str(json).expect("tanzu.json should parse");
-        assert_eq!(config.name, "tanzu_ai");
-        assert_eq!(config.display_name, "VMware Tanzu Platform");
+            serde_json::from_str(json).expect("hcompany.json should parse");
+        assert_eq!(config.name, "custom_hcompany");
+        assert_eq!(config.display_name, "H Company (Holo3)");
         assert!(matches!(config.engine, ProviderEngine::OpenAI));
-        assert_eq!(config.api_key_env, "TANZU_AI_API_KEY");
-        assert_eq!(
-            config.base_url,
-            "${TANZU_AI_ENDPOINT}/openai/v1/chat/completions"
-        );
-        assert_eq!(config.dynamic_models, Some(true));
+        assert_eq!(config.api_key_env, "HAI_API_KEY");
+        assert_eq!(config.base_url, "https://api.hcompany.ai/v1/");
+        assert_eq!(config.timeout_seconds, Some(120));
         assert_eq!(config.supports_streaming, Some(true));
-
-        let env_vars = config.env_vars.as_ref().expect("env_vars should be set");
-        assert_eq!(env_vars.len(), 2);
-        assert_eq!(env_vars[0].name, "TANZU_AI_ENDPOINT");
-        assert!(env_vars[0].required);
-        assert!(!env_vars[0].secret);
-        assert_eq!(env_vars[1].name, "TANZU_AI_STREAMING");
-        assert!(!env_vars[1].required);
-        assert_eq!(env_vars[1].default, Some("true".to_string()));
-
-        assert_eq!(config.models.len(), 1);
-        assert_eq!(config.models[0].name, "openai/gpt-oss-120b");
+        assert!(config.env_vars.is_none());
+        assert!(config.dynamic_models.is_none());
+        assert_eq!(config.models.len(), 2);
+        assert_eq!(config.models[0].name, "holo3-35b-a3b");
+        assert_eq!(config.models[1].name, "holo3-122b-a10b");
     }
 
     #[test]
-    fn test_existing_json_files_still_deserialize_without_new_fields() {
-        let json = include_str!("../providers/declarative/groq.json");
-        let config: DeclarativeProviderConfig =
-            serde_json::from_str(json).expect("groq.json should parse without env_vars");
-        assert!(config.env_vars.is_none());
-        assert!(config.dynamic_models.is_none());
+    fn test_fixed_json_files_still_deserialize() {
+        for file in FIXED_PROVIDERS.files() {
+            if file.path().extension().and_then(|s| s.to_str()) != Some("json") {
+                continue;
+            }
+
+            let content = file
+                .contents_utf8()
+                .unwrap_or_else(|| panic!("{:?} should be valid UTF-8", file.path()));
+            serde_json::from_str::<DeclarativeProviderConfig>(content)
+                .unwrap_or_else(|err| panic!("{:?} should parse: {}", file.path(), err));
+        }
     }
 
     #[test]

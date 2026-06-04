@@ -2,7 +2,7 @@ use crate::session_context::SESSION_ID_HEADER;
 use anyhow::Result;
 use async_trait::async_trait;
 use reqwest::{
-    header::{HeaderMap, HeaderName, HeaderValue},
+    header::{HeaderMap, HeaderName, HeaderValue, USER_AGENT},
     Certificate, Client, Identity, Response, StatusCode,
 };
 use serde_json::Value;
@@ -19,6 +19,19 @@ pub struct ApiClient {
     default_query: Vec<(String, String)>,
     timeout: Duration,
     tls_config: Option<TlsConfig>,
+}
+
+const DONNA_DESKTOP_USER_AGENT: HeaderValue = HeaderValue::from_static(concat!(
+    "DonnaDesktop/",
+    env!("CARGO_PKG_VERSION"),
+    " goose/",
+    env!("CARGO_PKG_VERSION")
+));
+
+fn default_headers() -> HeaderMap {
+    let mut headers = HeaderMap::new();
+    headers.insert(USER_AGENT, DONNA_DESKTOP_USER_AGENT.clone());
+    headers
 }
 
 pub enum AuthMethod {
@@ -282,7 +295,10 @@ impl ApiClient {
     }
 
     pub fn with_timeout(host: String, auth: AuthMethod, timeout: Duration) -> Result<Self> {
-        let mut client_builder = Client::builder().timeout(timeout);
+        let default_headers = default_headers();
+        let mut client_builder = Client::builder()
+            .timeout(timeout)
+            .default_headers(default_headers.clone());
 
         // Configure TLS if needed
         let tls_config = TlsConfig::from_config()?;
@@ -296,7 +312,7 @@ impl ApiClient {
             client,
             host,
             auth,
-            default_headers: HeaderMap::new(),
+            default_headers,
             default_query: Vec::new(),
             timeout,
             tls_config,
@@ -338,7 +354,9 @@ impl ApiClient {
     }
 
     pub fn with_headers(mut self, headers: HeaderMap) -> Result<Self> {
-        self.default_headers = headers;
+        let mut merged_headers = default_headers();
+        merged_headers.extend(headers);
+        self.default_headers = merged_headers;
         self.rebuild_client()?;
         Ok(self)
     }
@@ -639,6 +657,54 @@ ShGoCNbfNS+COlPMRAujyDlATZcLs9p4tA==
 mod tests {
     use super::*;
     use test_case::test_case;
+    use wiremock::{
+        matchers::{header, method, path},
+        Mock, MockServer, ResponseTemplate,
+    };
+
+    fn expected_user_agent() -> String {
+        DONNA_DESKTOP_USER_AGENT.to_str().unwrap().to_string()
+    }
+
+    #[tokio::test]
+    async fn test_default_user_agent_header_is_sent() {
+        let server = MockServer::start().await;
+        Mock::given(method("GET"))
+            .and(path("/test"))
+            .and(header("user-agent", expected_user_agent()))
+            .respond_with(ResponseTemplate::new(200).set_body_json(serde_json::json!({})))
+            .expect(1)
+            .mount(&server)
+            .await;
+
+        let client = ApiClient::new(server.uri(), AuthMethod::NoAuth).unwrap();
+        client.response_get(None, "/test").await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn test_with_headers_keeps_default_user_agent_header() {
+        let server = MockServer::start().await;
+        Mock::given(method("GET"))
+            .and(path("/test"))
+            .and(header("user-agent", expected_user_agent()))
+            .and(header("x-test", "1"))
+            .respond_with(ResponseTemplate::new(200).set_body_json(serde_json::json!({})))
+            .expect(1)
+            .mount(&server)
+            .await;
+
+        let mut headers = HeaderMap::new();
+        headers.insert(
+            HeaderName::from_static("x-test"),
+            HeaderValue::from_static("1"),
+        );
+        let client = ApiClient::new(server.uri(), AuthMethod::NoAuth)
+            .unwrap()
+            .with_headers(headers)
+            .unwrap();
+
+        client.response_get(None, "/test").await.unwrap();
+    }
 
     #[test_case(Some("test-session_id-456"), None, Some("test-session_id-456"); "header set")]
     #[test_case(Some("new-session"), Some(("Agent-Session-Id", "old-session")), Some("new-session"); "replaces existing")]

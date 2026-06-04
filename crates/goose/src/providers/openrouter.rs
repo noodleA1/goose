@@ -22,9 +22,7 @@ pub const OPENROUTER_MODEL_PREFIX_ANTHROPIC: &str = "anthropic";
 
 // DONNA distribution: locked to Qwen3.6-plus only.
 // No other models are offered — metering and quality are controlled at this layer.
-pub const OPENROUTER_KNOWN_MODELS: &[&str] = &[
-    "qwen/qwen3.6-plus",
-];
+pub const OPENROUTER_KNOWN_MODELS: &[&str] = &["qwen/qwen3.6-plus"];
 pub const OPENROUTER_DOC_URL: &str = "https://openrouter.ai/models";
 
 #[derive(serde::Serialize)]
